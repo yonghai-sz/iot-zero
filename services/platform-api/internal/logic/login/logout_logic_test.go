@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/zeromicro/go-zero/core/stores/redis"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 )
@@ -27,5 +28,5 @@ func TestLogoutLogic_Logout(t *testing.T) {
 
 func TestLogoutLogic_LogoutUnauthorized(t *testing.T) {
 	l := NewLogoutLogic(context.Background(), &svc.ServiceContext{})
-	assert.ErrorIs(t, l.Logout(), errUnauthorized)
+	assert.ErrorIs(t, l.Logout(), authz.ErrUnauthorized)
 }

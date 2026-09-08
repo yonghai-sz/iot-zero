@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -32,7 +33,7 @@ func (l *GetProductLogic) GetProduct(req *types.ProductIdPathReq) (resp *types.P
 	entity, err := l.svcCtx.ProductModel.FindOne(l.ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return nil, errors.New("product not found")
+			return nil, authz.NotFound("product")
 		}
 		return nil, err
 	}

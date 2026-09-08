@@ -5,15 +5,13 @@ package login
 
 import (
 	"context"
-	"errors"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-var errUnauthorized = errors.New("unauthorized")
 
 type LogoutLogic struct {
 	logx.Logger
@@ -32,7 +30,7 @@ func NewLogoutLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LogoutLogi
 func (l *LogoutLogic) Logout() error {
 	username, ok := session.UsernameFromContext(l.ctx)
 	if !ok {
-		return errUnauthorized
+		return authz.ErrUnauthorized
 	}
 	return l.svcCtx.SessionStore.Delete(l.ctx, username)
 }

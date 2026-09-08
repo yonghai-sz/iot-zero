@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -30,6 +31,10 @@ func NewCreateProductLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Cre
 }
 
 func (l *CreateProductLogic) CreateProduct(req *types.CreateProductReq) (resp *types.CreateProductResp, err error) {
+	if err = authz.AuthorizeSuperAdmin(l.ctx); err != nil {
+		return nil, err
+	}
+
 	code := strings.TrimSpace(req.ProductCode)
 	name := strings.TrimSpace(req.ProductName)
 	if code == "" {

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
@@ -31,6 +32,10 @@ func NewCreateTenantLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Crea
 }
 
 func (l *CreateTenantLogic) CreateTenant(req *types.CreateTenantReq) (resp *types.CreateTenantResp, err error) {
+	if err = authz.AuthorizeSuperAdmin(l.ctx); err != nil {
+		return nil, err
+	}
+
 	name := strings.TrimSpace(req.TenantName)
 	if name == "" {
 		return nil, errors.New("tenantName is required")

@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -57,6 +58,30 @@ func RoleTypeFromContext(ctx context.Context) (string, bool) {
 	v := ctx.Value("roleType")
 	s, ok := v.(string)
 	return s, ok && s != ""
+}
+
+func TenantIdFromContext(ctx context.Context) (uint64, bool) {
+	return uint64FromContext(ctx, "tenantId")
+}
+
+func uint64FromContext(ctx context.Context, key string) (uint64, bool) {
+	switch v := ctx.Value(key).(type) {
+	case uint64:
+		return v, true
+	case float64:
+		if v < 0 {
+			return 0, false
+		}
+		return uint64(v), true
+	case json.Number:
+		n, err := v.Int64()
+		if err != nil || n < 0 {
+			return 0, false
+		}
+		return uint64(n), true
+	default:
+		return 0, false
+	}
 }
 
 func BearerToken(r *http.Request) string {

@@ -29,10 +29,14 @@ func NewDeleteRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 }
 
 func (l *DeleteRoleLogic) DeleteRole(req *types.RoleIdPathReq) error {
+	if _, err := loadRoleForAdmin(l.ctx, l.svcCtx.RoleModel, req.Id); err != nil {
+		return err
+	}
+
 	err := l.svcCtx.RoleModel.Delete(l.ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return errors.New("role not found")
+			return errRoleNotFound
 		}
 		return err
 	}

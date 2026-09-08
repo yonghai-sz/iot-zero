@@ -6,6 +6,7 @@ package tenant
 import (
 	"context"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 
@@ -27,6 +28,10 @@ func NewListTenantLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListTe
 }
 
 func (l *ListTenantLogic) ListTenant(req *types.ListTenantReq) (resp *types.ListTenantResp, err error) {
+	if err = authz.AuthorizeSuperAdmin(l.ctx); err != nil {
+		return nil, err
+	}
+
 	pageIndex := req.PageIndex
 	if pageIndex <= 0 {
 		pageIndex = 1

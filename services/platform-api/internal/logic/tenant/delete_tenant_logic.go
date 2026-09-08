@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
@@ -30,10 +31,14 @@ func NewDeleteTenantLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Dele
 }
 
 func (l *DeleteTenantLogic) DeleteTenant(req *types.TenantIdPathReq) error {
+	if err := authz.AuthorizeSuperAdmin(l.ctx); err != nil {
+		return err
+	}
+
 	err := l.svcCtx.TenantsModel.Delete(l.ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return errors.New("tenant not found")
+			return errTenantNotFound
 		}
 		return err
 	}

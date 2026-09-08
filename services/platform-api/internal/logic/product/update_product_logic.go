@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -30,10 +31,14 @@ func NewUpdateProductLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upd
 }
 
 func (l *UpdateProductLogic) UpdateProduct(req *types.UpdateProductReq) (resp *types.ProductInfo, err error) {
+	if err = authz.AuthorizeSuperAdmin(l.ctx); err != nil {
+		return nil, err
+	}
+
 	entity, err := l.svcCtx.ProductModel.FindOne(l.ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return nil, errors.New("product not found")
+			return nil, authz.NotFound("product")
 		}
 		return nil, err
 	}

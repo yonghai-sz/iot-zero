@@ -16,11 +16,6 @@ import (
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-var (
-	errUnauthorized = errors.New("unauthorized")
-	errRoleNotFound = errors.New("role not found")
-)
-
 type GetMenuTreeLogic struct {
 	logx.Logger
 	ctx    context.Context

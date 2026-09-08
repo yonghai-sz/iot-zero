@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/config"
 	"iot-zero/services/platform-api/internal/handler"
 	"iot-zero/services/platform-api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 var configFile = flag.String("f", "etc/platform-api.yaml", "the config file")
@@ -30,6 +32,8 @@ func main() {
 	}
 	server := rest.MustNewServer(c.RestConf, opts...)
 	defer server.Stop()
+
+	httpx.SetErrorHandler(authz.HTTPError)
 
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)

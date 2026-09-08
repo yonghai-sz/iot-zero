@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
@@ -31,6 +32,9 @@ func NewCreateRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateRoleLogic) CreateRole(req *types.CreateRoleReq) (resp *types.CreateRoleResp, err error) {
+	if err = authz.AuthorizeAdminForTenant(l.ctx, req.TenantId); err != nil {
+		return nil, err
+	}
 	if req.TenantId == 0 {
 		return nil, errors.New("tenantId is required")
 	}

@@ -46,15 +46,7 @@ service platform-api {
 
 	@handler ListProductHandler
 	get /products (ListProductReq) returns (ListProductResp)
-}
 
-@server (
-	jwt:        Auth
-	middleware: Session, SuperAdmin
-	prefix:     /v1
-	group:      product
-)
-service platform-api {
 	@handler CreateProductHandler
 	post /products (CreateProductReq) returns (CreateProductResp)
 

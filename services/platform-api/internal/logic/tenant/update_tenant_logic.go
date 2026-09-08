@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -30,10 +31,14 @@ func NewUpdateTenantLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Upda
 }
 
 func (l *UpdateTenantLogic) UpdateTenant(req *types.UpdateTenantReq) (resp *types.TenantInfo, err error) {
+	if err = authz.AuthorizeSuperAdmin(l.ctx); err != nil {
+		return nil, err
+	}
+
 	entity, err := l.svcCtx.TenantsModel.FindOne(l.ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return nil, errors.New("tenant not found")
+			return nil, errTenantNotFound
 		}
 		return nil, err
 	}

@@ -70,16 +70,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Path:    "/products/:id",
 					Handler: product.GetProductHandler(serverCtx),
 				},
-			}...,
-		),
-		rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
-		rest.WithPrefix("/v1"),
-	)
-
-	server.AddRoutes(
-		rest.WithMiddlewares(
-			[]rest.Middleware{serverCtx.Session, serverCtx.SuperAdmin},
-			[]rest.Route{
 				{
 					Method:  http.MethodPost,
 					Path:    "/products",

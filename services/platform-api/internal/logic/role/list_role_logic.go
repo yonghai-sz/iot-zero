@@ -6,6 +6,7 @@ package role
 import (
 	"context"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 
@@ -27,6 +28,10 @@ func NewListRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ListRole
 }
 
 func (l *ListRoleLogic) ListRole(req *types.ListRoleReq) (resp *types.ListRoleResp, err error) {
+	if err = authz.AuthorizeAdminForTenant(l.ctx, req.TenantId); err != nil {
+		return nil, err
+	}
+
 	pageIndex := req.PageIndex
 	if pageIndex <= 0 {
 		pageIndex = 1
