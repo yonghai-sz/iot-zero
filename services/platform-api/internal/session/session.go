@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	keyPrefix         = "login:"
-	RoleTypeSuperAdmin = "SuperAdmin"
+	keyPrefix           = "login:"
+	RoleTypeSuperAdmin  = "SuperAdmin"
+	RoleTypeTenantAdmin = "TenantAdmin"
+	RoleTypeUser        = "User"
 )
 
 type Store struct {

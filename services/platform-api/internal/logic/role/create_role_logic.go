@@ -6,9 +6,9 @@ package role
 import (
 	"context"
 	"errors"
-	"strconv"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -40,7 +40,7 @@ func (l *CreateRoleLogic) CreateRole(req *types.CreateRoleReq) (resp *types.Crea
 	}
 
 	result, err := l.svcCtx.RoleModel.Insert(l.ctx, &model.Role{
-		RoleType: "",
+		RoleType: session.RoleTypeUser,
 		RoleName: name,
 		Enable:   boolToEnable(req.Enable),
 		TenantId: req.TenantId,
@@ -48,20 +48,9 @@ func (l *CreateRoleLogic) CreateRole(req *types.CreateRoleReq) (resp *types.Crea
 	if err != nil {
 		return nil, err
 	}
-
 	id, err := result.LastInsertId()
 	if err != nil {
 		return nil, err
 	}
-
-	entity, err := l.svcCtx.RoleModel.FindOne(l.ctx, uint64(id))
-	if err != nil {
-		return nil, err
-	}
-	entity.RoleType = strconv.FormatInt(id, 10)
-	if err = l.svcCtx.RoleModel.Update(l.ctx, entity); err != nil {
-		return nil, err
-	}
-
 	return &types.CreateRoleResp{Id: uint64(id)}, nil
 }

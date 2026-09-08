@@ -47,6 +47,14 @@ func (l *CreateUserLogic) CreateUser(req *types.CreateUserReq) (resp *types.Crea
 		return nil, errors.New("password is required")
 	}
 
+	_, err = l.svcCtx.RoleModel.FindOne(l.ctx, req.RoleId)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return nil, errors.New("role not found")
+		}
+		return nil, err
+	}
+
 	_, err = l.svcCtx.UserModel.FindOneByUsername(l.ctx, username)
 	if err == nil {
 		return nil, errors.New("username already exists")

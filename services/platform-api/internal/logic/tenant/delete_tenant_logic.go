@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 
+	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -34,6 +35,17 @@ func (l *DeleteTenantLogic) DeleteTenant(req *types.TenantIdPathReq) error {
 		if errors.Is(err, model.ErrNotFound) {
 			return errors.New("tenant not found")
 		}
+		return err
+	}
+
+	role, err := l.svcCtx.RoleModel.FindOneByRoleTypeAndTenantId(l.ctx, session.RoleTypeTenantAdmin, req.Id)
+	if err != nil {
+		if errors.Is(err, model.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	if err = l.svcCtx.RoleModel.Delete(l.ctx, role.Id); err != nil && !errors.Is(err, model.ErrNotFound) {
 		return err
 	}
 	return nil

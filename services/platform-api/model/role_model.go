@@ -18,6 +18,7 @@ type (
 	RoleModel interface {
 		roleModel
 		FindOneByRoleType(ctx context.Context, roleType string) (*Role, error)
+		FindOneByRoleTypeAndTenantId(ctx context.Context, roleType string, tenantId uint64) (*Role, error)
 		FindPage(ctx context.Context, tenantId uint64, roleName string, pageIndex, pageSize int64) (int64, []*Role, error)
 		withSession(session sqlx.Session) RoleModel
 	}
@@ -43,6 +44,9 @@ func (m *customRoleModel) Insert(ctx context.Context, data *Role) (sql.Result, e
 	data.CreatedAt = sql.NullTime{Time: now, Valid: true}
 	data.UpdatedAt = sql.NullTime{Time: now, Valid: true}
 	data.DeletedAt = sql.NullTime{}
+	if data.RoleType == "" {
+		data.RoleType = "User"
+	}
 	if data.Enable == "" {
 		data.Enable = "Enable"
 	}
@@ -92,6 +96,20 @@ func (m *customRoleModel) FindOneByRoleType(ctx context.Context, roleType string
 	query := fmt.Sprintf("select %s from %s where `role_type` = ? and `deleted_at` is null limit 1", roleRows, m.table)
 	var resp Role
 	err := m.conn.QueryRowCtx(ctx, &resp, query, roleType)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlx.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+func (m *customRoleModel) FindOneByRoleTypeAndTenantId(ctx context.Context, roleType string, tenantId uint64) (*Role, error) {
+	query := fmt.Sprintf("select %s from %s where `role_type` = ? and `tenant_id` = ? and `deleted_at` is null limit 1", roleRows, m.table)
+	var resp Role
+	err := m.conn.QueryRowCtx(ctx, &resp, query, roleType, tenantId)
 	switch err {
 	case nil:
 		return &resp, nil

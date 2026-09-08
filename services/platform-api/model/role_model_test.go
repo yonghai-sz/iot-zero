@@ -27,7 +27,7 @@ func TestRoleModel_InsertAndFindOne(t *testing.T) {
 	ctx := context.Background()
 
 	mock.ExpectExec("insert into `role`").
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "", "admin", "Enable", uint64(1)).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "User", "admin", "Enable", uint64(1)).
 		WillReturnResult(sqlmock.NewResult(9, 1))
 
 	result, err := m.Insert(ctx, &Role{
@@ -74,6 +74,29 @@ func TestRoleModel_FindOneByRoleType(t *testing.T) {
 		WithArgs("missing").
 		WillReturnError(sqlx.ErrNotFound)
 	_, err = m.FindOneByRoleType(ctx, "missing")
+	ast.ErrorIs(err, ErrNotFound)
+}
+
+func TestRoleModel_FindOneByRoleTypeAndTenantId(t *testing.T) {
+	ast := assert.New(t)
+	m, mock := newMockRoleModel(t)
+	ctx := context.Background()
+	now := time.Now()
+
+	mock.ExpectQuery("select .+ from `role` where `role_type` = \\? and `tenant_id` = \\? and `deleted_at` is null").
+		WithArgs("TenantAdmin", uint64(7)).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "created_at", "updated_at", "deleted_at", "role_type", "role_name", "enable", "tenant_id"}).
+			AddRow(uint64(3), now, now, nil, "TenantAdmin", "tenant administrator", "Enable", uint64(7)))
+
+	got, err := m.FindOneByRoleTypeAndTenantId(ctx, "TenantAdmin", 7)
+	ast.NoError(err)
+	ast.Equal(uint64(3), got.Id)
+	ast.Equal(uint64(7), got.TenantId)
+
+	mock.ExpectQuery("select .+ from `role` where `role_type` = \\? and `tenant_id` = \\? and `deleted_at` is null").
+		WithArgs("TenantAdmin", uint64(99)).
+		WillReturnError(sqlx.ErrNotFound)
+	_, err = m.FindOneByRoleTypeAndTenantId(ctx, "TenantAdmin", 99)
 	ast.ErrorIs(err, ErrNotFound)
 }
 

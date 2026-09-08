@@ -42,6 +42,12 @@ func (l *UpdateUserLogic) UpdateUser(req *types.UpdateUserReq) (resp *types.User
 	}
 
 	if req.RoleId > 0 {
+		if _, err = l.svcCtx.RoleModel.FindOne(l.ctx, req.RoleId); err != nil {
+			if errors.Is(err, model.ErrNotFound) {
+				return nil, errors.New("role not found")
+			}
+			return nil, err
+		}
 		entity.RoleId = req.RoleId
 	}
 	if req.Enable != nil {

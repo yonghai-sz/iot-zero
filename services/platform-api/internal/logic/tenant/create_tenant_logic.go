@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strings"
 
+	"iot-zero/services/platform-api/internal/session"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -52,6 +53,16 @@ func (l *CreateTenantLogic) CreateTenant(req *types.CreateTenantReq) (resp *type
 	}
 
 	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = l.svcCtx.RoleModel.Insert(l.ctx, &model.Role{
+		RoleType: session.RoleTypeTenantAdmin,
+		RoleName: "tenant administrator",
+		Enable:   "Enable",
+		TenantId: uint64(id),
+	})
 	if err != nil {
 		return nil, err
 	}
