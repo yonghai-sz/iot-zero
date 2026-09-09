@@ -68,3 +68,13 @@ func AuthorizeAdminForTenant(ctx context.Context, tenantId uint64) error {
 	}
 	return nil
 }
+
+func AuthorizeSelfOrAdmin(ctx context.Context, username string) error {
+	if _, ok := session.RoleTypeFromContext(ctx); !ok {
+		return ErrUnauthorized
+	}
+	if operatorUsername, ok := session.UsernameFromContext(ctx); ok && operatorUsername == username {
+		return nil
+	}
+	return AuthorizeAdmin(ctx)
+}

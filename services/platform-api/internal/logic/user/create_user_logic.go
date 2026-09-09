@@ -10,6 +10,7 @@ import (
 	"unicode"
 
 	"iot-zero/pkg/utils"
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
@@ -32,6 +33,9 @@ func NewCreateUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateUserLogic) CreateUser(req *types.CreateUserReq) (resp *types.CreateUserResp, err error) {
+	if err = authz.AuthorizeAdminForTenant(l.ctx, req.TenantId); err != nil {
+		return nil, err
+	}
 	if req.TenantId == 0 {
 		return nil, errors.New("tenantId is required")
 	}

@@ -10,8 +10,13 @@ import (
 )
 
 func operatorCtx(roleType string, tenantId uint64) context.Context {
+	return operatorUserCtx(roleType, tenantId, "operator")
+}
+
+func operatorUserCtx(roleType string, tenantId uint64, username string) context.Context {
 	ctx := context.WithValue(context.Background(), "roleType", roleType)
-	return context.WithValue(ctx, "tenantId", float64(tenantId))
+	ctx = context.WithValue(ctx, "tenantId", float64(tenantId))
+	return context.WithValue(ctx, "username", username)
 }
 
 func TestAuthorizeSuperAdmin(t *testing.T) {
@@ -27,4 +32,12 @@ func TestAuthorizeAdminForTenant(t *testing.T) {
 	assert.ErrorIs(t, AuthorizeAdminForTenant(operatorCtx(session.RoleTypeTenantAdmin, 3), 7), ErrForbidden)
 	assert.NoError(t, AuthorizeAdminForTenant(operatorCtx(session.RoleTypeTenantAdmin, 7), 7))
 	assert.NoError(t, AuthorizeAdminForTenant(operatorCtx(session.RoleTypeSuperAdmin, 1), 7))
+}
+
+func TestAuthorizeSelfOrAdmin(t *testing.T) {
+	assert.ErrorIs(t, AuthorizeSelfOrAdmin(context.Background(), "alice"), ErrUnauthorized)
+	assert.ErrorIs(t, AuthorizeSelfOrAdmin(operatorUserCtx(session.RoleTypeUser, 7, "alice"), "bob"), ErrForbidden)
+	assert.NoError(t, AuthorizeSelfOrAdmin(operatorUserCtx(session.RoleTypeUser, 7, "alice"), "alice"))
+	assert.NoError(t, AuthorizeSelfOrAdmin(operatorUserCtx(session.RoleTypeTenantAdmin, 7, "admin"), "bob"))
+	assert.NoError(t, AuthorizeSelfOrAdmin(operatorUserCtx(session.RoleTypeSuperAdmin, 1, "root"), "bob"))
 }

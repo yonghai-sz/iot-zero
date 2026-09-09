@@ -11,7 +11,6 @@ import (
 	"iot-zero/pkg/utils"
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
-	"iot-zero/services/platform-api/model"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -36,11 +35,8 @@ func (l *UpdateUserPasswordLogic) UpdateUserPassword(req *types.UpdateUserPasswo
 		return errors.New("password is required")
 	}
 
-	entity, err := l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
+	entity, err := loadUserForSelfOrAdmin(l.ctx, l.svcCtx.UserModel, req.Username)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return errors.New("user not found")
-		}
 		return err
 	}
 

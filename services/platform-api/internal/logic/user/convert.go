@@ -4,8 +4,15 @@ import (
 	"database/sql"
 	"time"
 
+	"iot-zero/services/platform-api/internal/authz"
 	"iot-zero/services/platform-api/internal/types"
 	"iot-zero/services/platform-api/model"
+)
+
+var (
+	errUnauthorized = authz.ErrUnauthorized
+	errForbidden    = authz.ErrForbidden
+	errUserNotFound = authz.NotFound("user")
 )
 
 func toUserInfo(u *model.User) types.UserInfo {

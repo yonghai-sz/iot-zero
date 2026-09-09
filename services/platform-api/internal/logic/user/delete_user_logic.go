@@ -29,17 +29,14 @@ func NewDeleteUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 }
 
 func (l *DeleteUserLogic) DeleteUser(req *types.UserUsernamePathReq) error {
-	entity, err := l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
+	entity, err := loadUserForAdmin(l.ctx, l.svcCtx.UserModel, req.Username)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return errors.New("user not found")
-		}
 		return err
 	}
 
 	if err = l.svcCtx.UserModel.Delete(l.ctx, entity.Id); err != nil {
 		if errors.Is(err, model.ErrNotFound) {
-			return errors.New("user not found")
+			return errUserNotFound
 		}
 		return err
 	}

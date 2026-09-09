@@ -5,11 +5,9 @@ package user
 
 import (
 	"context"
-	"errors"
 
 	"iot-zero/services/platform-api/internal/svc"
 	"iot-zero/services/platform-api/internal/types"
-	"iot-zero/services/platform-api/model"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,11 +27,8 @@ func NewGetUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUserLo
 }
 
 func (l *GetUserLogic) GetUser(req *types.UserUsernamePathReq) (resp *types.UserInfo, err error) {
-	entity, err := l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
+	entity, err := loadUserForSelfOrAdmin(l.ctx, l.svcCtx.UserModel, req.Username)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return nil, errors.New("user not found")
-		}
 		return nil, err
 	}
 	info := toUserInfo(entity)

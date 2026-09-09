@@ -29,11 +29,8 @@ func NewUpdateUserLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Update
 }
 
 func (l *UpdateUserLogic) UpdateUser(req *types.UpdateUserReq) (resp *types.UserInfo, err error) {
-	entity, err := l.svcCtx.UserModel.FindOneByUsername(l.ctx, req.Username)
+	entity, err := loadUserForSelfOrAdmin(l.ctx, l.svcCtx.UserModel, req.Username)
 	if err != nil {
-		if errors.Is(err, model.ErrNotFound) {
-			return nil, errors.New("user not found")
-		}
 		return nil, err
 	}
 
